@@ -1,54 +1,89 @@
-import { useEffect } from "react";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import "@/App.css";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import axios from "axios";
-import { HOME } from "@/constants/testIds";
+import { AuthProvider, useAuth } from "@/context/AuthContext";
+import { Toaster } from "@/components/ui/sonner";
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
-const API = `${BACKEND_URL}/api`;
+import LoginPage from "@/pages/Login";
+import AppShell from "@/components/layout/AppShell";
 
-const Home = () => {
-  const helloWorldApi = async () => {
-    try {
-      const response = await axios.get(`${API}/`);
-      console.log(response.data.message);
-    } catch (e) {
-      console.error(e, `errored out requesting / api`);
-    }
-  };
+import AdminDashboard from "@/pages/admin/Dashboard";
+import Products from "@/pages/admin/Products";
+import Salespersons from "@/pages/admin/Salespersons";
+import Vendors from "@/pages/admin/Vendors";
+import Inventory from "@/pages/admin/Inventory";
+import Allocations from "@/pages/admin/Allocations";
+import AdminSales from "@/pages/admin/Sales";
+import AdminCollections from "@/pages/admin/Collections";
+import Reports from "@/pages/admin/Reports";
 
-  useEffect(() => {
-    helloWorldApi();
-  }, []);
+import SPDashboard from "@/pages/salesperson/Dashboard";
+import SPRecordSale from "@/pages/salesperson/RecordSale";
+import SPCollections from "@/pages/salesperson/Collections";
+import EODSummary from "@/pages/salesperson/EODSummary";
 
+function RequireRole({ role, children }) {
+  const { user, loading } = useAuth();
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <div className="text-slate-500 text-sm">Loading…</div>
+      </div>
+    );
+  }
+  if (!user) return <Navigate to="/login" replace />;
+  if (role && user.role !== role) {
+    return <Navigate to={user.role === "admin" ? "/admin" : "/sales"} replace />;
+  }
+  return children;
+}
+
+function AppRoutes() {
+  const { user, loading } = useAuth();
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <div className="text-slate-500 text-sm">Loading…</div>
+      </div>
+    );
+  }
   return (
-    <div>
-      <header className="App-header">
-        <a
-          data-testid={HOME.emergentLink}
-          className="App-link"
-          href="https://emergent.sh"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <img src="https://avatars.githubusercontent.com/in/1201222?s=120&u=2686cf91179bbafbc7a71bfbc43004cf9ae1acea&v=4" />
-        </a>
-        <p className="mt-5">Building something incredible ~!</p>
-      </header>
-    </div>
+    <Routes>
+      <Route path="/login" element={<LoginPage />} />
+
+      <Route element={<RequireRole role="admin"><AppShell role="admin" /></RequireRole>}>
+        <Route path="/admin" element={<AdminDashboard />} />
+        <Route path="/admin/products" element={<Products />} />
+        <Route path="/admin/salespersons" element={<Salespersons />} />
+        <Route path="/admin/vendors" element={<Vendors />} />
+        <Route path="/admin/inventory" element={<Inventory />} />
+        <Route path="/admin/allocations" element={<Allocations />} />
+        <Route path="/admin/sales" element={<AdminSales />} />
+        <Route path="/admin/collections" element={<AdminCollections />} />
+        <Route path="/admin/reports" element={<Reports />} />
+      </Route>
+
+      <Route element={<RequireRole role="salesperson"><AppShell role="salesperson" /></RequireRole>}>
+        <Route path="/sales" element={<SPDashboard />} />
+        <Route path="/sales/record" element={<SPRecordSale />} />
+        <Route path="/sales/collections" element={<SPCollections />} />
+        <Route path="/sales/eod" element={<EODSummary />} />
+      </Route>
+
+      <Route path="/" element={<Navigate to={user ? (user.role === "admin" ? "/admin" : "/sales") : "/login"} replace />} />
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
   );
-};
+}
 
 function App() {
   return (
     <div className="App">
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Home />}>
-            <Route index element={<Home />} />
-          </Route>
-        </Routes>
-      </BrowserRouter>
+      <AuthProvider>
+        <BrowserRouter>
+          <AppRoutes />
+        </BrowserRouter>
+        <Toaster position="top-right" richColors closeButton />
+      </AuthProvider>
     </div>
   );
 }

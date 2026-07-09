@@ -1,0 +1,46 @@
+{
+  "summary": "Initial full-stack testing of DMS. Backend: 30/30 pytest cases pass (auth, RBAC, CRUD for products/salespersons/vendors, godown inventory, allocations, sales with remaining-stock validation, collections, dashboards, EOD, reports, xlsx/pdf export). Frontend: admin login → dashboard (6 metric cards + charts) → sidebar navigation to all 8 admin pages → add product → allocate stock → reports (5 tabs) → logout all work. Salesperson login → dashboard → Record Sale (product/vendor/qty flow with remaining check and preview) → Collections (cash) → End of Day summary → logout all work.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {
+        "component": "Global (React dev overlay)",
+        "issue": "'Uncaught runtime errors: ResizeObserver loop completed with undelivered notifications' overlay appears in dev mode after certain page transitions (typically after opening/closing a modal like New Allocation, then navigating). The full-screen red overlay BLOCKS interaction (logout button, sidebar) until user clicks the close × in the overlay. Caused by recharts + Radix Dialog + CRA error overlay. Only affects dev; not a runtime bug in production build but hurts QA/dev experience.",
+        "selector": "body iframe#webpack-dev-server-client-overlay",
+        "priority": "MEDIUM"
+      }
+    ],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/backend_test.py",
+    "/app/test_reports/pytest/pytest_results.xml"
+  ],
+  "action_items": [
+    "Suppress ResizeObserver noisy errors in frontend/src/index.js to prevent CRA dev-overlay from blocking QA: add `window.addEventListener('error', e => { if (e.message?.includes('ResizeObserver loop')) e.stopImmediatePropagation(); })` and same for 'unhandledrejection'. Or configure webpackDevServer client.overlay.runtimeErrors=false via craco. This is the standard fix for recharts+Radix combo."
+  ],
+  "critical_code_review_comments": [
+    "server.py: `add_inventory_txn` handles only stock_added/stock_returned but computes `inc = quantity` for both (line 316). stock_returned should either DECREASE current_stock (customer return to godown INCREASES stock; but 'stock_returned' semantic is unclear). Either way both branches use `inc = quantity` which means stock_returned also increments — behavioral bug or misleading naming. Recommend clarifying semantics and adjusting sign.",
+    "server.py: allocations endpoint does NOT wrap the stock-decrement + salesperson-inventory-upsert + allocation-insert in a transaction; concurrent allocations can oversell. Consider MongoDB multi-doc transactions or an atomic $inc with condition.",
+    "server.py: /api/allocations DELETE / undo missing — once allocated, admin cannot undo (only compensating via inventory txns). Consider adding a delete/refund endpoint.",
+    "auth.py: cookies use secure=False even in production. Since deployment is over HTTPS, secure should be True in production to protect the token.",
+    "server.py: Sales POST uses aggregation on every write to compute remaining; could race under load. Consider storing running remaining on salesperson_inventory.",
+    "server.py: uses deprecated @app.on_event('startup'/'shutdown'); should migrate to FastAPI lifespan context manager.",
+    "seed.py: mobile generation `f\"98{1000000 + i * 12345}\"[:10]` yields inconsistent-length numbers (only truncates first 10 chars). Cosmetic.",
+    "CORS: allow_origins is '*' with allow_credentials=True — browsers reject this combination. Should list explicit origins for production."
+  ],
+  "updated_files": [
+    "/app/backend/tests/backend_test.py (new)"
+  ],
+  "success_rate": {"backend": "100% (30/30 pytest)", "frontend": "95% (all core flows verified)"},
+  "test_credentials": "Admin admin@dms.com/admin123; Salesperson sales1@dms.com/sales123 (matches /app/memory/test_credentials.md)",
+  "seed_data_creation": "Backend auto-seeds on startup: 10 products, 14 salespersons (sales1..sales14), 50 vendors, 1 admin. During UI testing I additionally created products (SKU UI-*), a test salesperson, and allocated 20 units of Classic Milds to sales1 + 5 units to Anil Nair. sales1 has 5 sales + 3 collections for today.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Backend pytest suite at /app/backend/tests/backend_test.py fully covers all endpoints. Run: `REACT_APP_BACKEND_URL=<url> pytest /app/backend/tests/backend_test.py -v`. Frontend uses the data-testids listed in the review request; all confirmed present. Only outstanding UI-quality issue is the dev-mode ResizeObserver error overlay which blocks navigation intermittently in Playwright — main agent should suppress it.",
+  "rca of the issue": "ResizeObserver overlay: recharts triggers a benign ResizeObserver notification when rendering Line/Bar charts inside a container whose size changes (e.g., after Radix Dialog opens/closes). Chrome's spec-compliant ResizeObserver dispatches a non-fatal loop-limit error that React/CRA's error overlay in dev mode catches and displays. This does NOT affect prod builds. Fix: add a global 'error' + 'unhandledrejection' listener in index.js that stops propagation for messages containing 'ResizeObserver loop', OR set devServer client.overlay.runtimeErrors=false in craco.config.js."
+}
