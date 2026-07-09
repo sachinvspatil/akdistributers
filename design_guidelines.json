@@ -1,0 +1,83 @@
+{
+  "theme": "Light theme with dark blue accents (Business Admin Dashboard)",
+  "typography": {
+    "headings": "Manrope",
+    "body": "IBM Plex Sans",
+    "instructions": "Use Manrope for all headings (font-bold/font-extrabold with tracking-tight) for a clean, slightly geometric look. Use IBM Plex Sans for body, table data, and inputs to ensure maximum legibility for numbers and dense data. NEVER use Inter or Roboto for headings."
+  },
+  "colors": {
+    "primary": "Dark Blue (bg-blue-900 / #1E3A8A) for main buttons and active states",
+    "sidebar": "Deep Slate (bg-slate-900 / #0F172A) for the main left navigation",
+    "background": "Light Slate (bg-slate-50 / #F8FAFC) for the dashboard canvas",
+    "surface": "White (bg-white) for metric cards, forms, and tables",
+    "border": "Subtle Gray (border-slate-200 / #E2E8F0)",
+    "success": "Emerald (text-emerald-600) for positive stock, sales growth",
+    "warning": "Amber (text-amber-600) for low stock",
+    "danger": "Rose (text-rose-600) for outstanding collections/debts",
+    "rules": "Avoid large full-screen gradients. Keep colors functional. Neutral tones should dominate, using color only to guide attention."
+  },
+  "layouts": {
+    "strategy": "High Density Grid (MODE B)",
+    "dashboard_grid": "Top executive summary strip: 4-6 actionable KPI cards (Total Stock, Sales Today, Collections, Vendors, Salespersons). Use 12-column grid. KPI cards span 2 cols each. Main charts span 6-8 cols.",
+    "spacing": "Generous padding inside cards (p-6). Tight gaps between cards (gap-4 or gap-6).",
+    "alignment": "Strictly left-aligned text for labels and data. Right-aligned for monetary numbers in tables."
+  },
+  "component_instructions": {
+    "sidebar": "Left-fixed navigation, 260px wide on desktop. Must collapse behind a hamburger menu on mobile. Dark background with white/slate-400 text.",
+    "metric_cards": "Flat solid surfaces (bg-white), 1px border (border-slate-200), subtle shadow-sm. Include an icon, the primary number (large, Manrope), and a sparkline or trend indicator.",
+    "tables": "Dense Shadcn tables for inventory/collections. Striped rows or subtle hover effect (hover:bg-slate-50). Ensure sticky headers if the list is long.",
+    "forms": "Simple, mobile-friendly forms for Daily Sales Entry. Labels stacked above inputs. Use Shadcn Input, Select, and Button.",
+    "charts": "Use Recharts. Line charts for sales trends, bar charts for top selling products.",
+    "buttons": "Pill-shaped or rounded-lg. Solid dark blue for primary actions. Outline/Ghost for secondary."
+  },
+  "visual_enhancers": {
+    "borders": "Grid borders or 1px subtle strokes to separate dashboard zones without relying heavily on shadows.",
+    "radius": "rounded-xl for main cards. rounded-lg for buttons and inputs.",
+    "shadows": "Minimalist shadows. shadow-sm on resting cards, shadow-md on interactive elements on hover."
+  },
+  "motion": {
+    "interactions": "Add hover:-translate-y-0.5 to metric cards. Use smooth transition-colors for all buttons and table rows.",
+    "loading": "Use skeleton loaders for tables and charts instead of full-page spinners."
+  },
+  "accessibility": {
+    "contrast": "Ensure >4.5:1 ratio. Dark blue text on white bg. Explicit hover states (e.g., hover:bg-slate-800 hover:text-white).",
+    "testing": "All interactive elements (buttons, inputs, links, tabs) MUST have data-testid attributes (e.g., data-testid='sales-submit-btn')."
+  },
+  "image_urls": {
+    "avatars": [
+      {
+        "url": "https://images.unsplash.com/photo-1699899657680-421c2c2d5064?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDQ2Mzl8MHwxfHNlYXJjaHw0fHxwcm9mZXNzaW9uYWwlMjBoZWFkc2hvdCUyMHBvcnRyYWl0fGVufDB8fHx8MTc4MzU5OTYyOXww&ixlib=rb-4.1.0&q=85",
+        "description": "Salesperson avatar 1"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDQ2Mzl8MHwxfHNlYXJjaHwzfHxwcm9mZXNzaW9uYWwlMjBoZWFkc2hvdCUyMHBvcnRyYWl0fGVufDB8fHx8MTc4MzU5OTYyOXww&ixlib=rb-4.1.0&q=85",
+        "description": "Salesperson avatar 2"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDQ2Mzl8MHwxfHNlYXJjaHwxfHxwcm9mZXNzaW9uYWwlMjBoZWFkc2hvdCUyMHBvcnRyYWl0fGVufDB8fHx8MTc4MzU5OTYyOXww&ixlib=rb-4.1.0&q=85",
+        "description": "Admin avatar"
+      }
+    ],
+    "placeholders": [
+      {
+        "url": "https://images.unsplash.com/photo-1553413077-190dd305871c?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NzV8MHwxfHNlYXJjaHwxfHxkaXN0cmlidXRpb24lMjB3YXJlaG91c2V8ZW58MHx8fHwxNzgzNjEwOTE1fDA&ixlib=rb-4.1.0&q=85",
+        "description": "Godown / Warehouse image for empty states or login background"
+      }
+    ]
+  },
+  "libraries": {
+    "icons": "lucide-react",
+    "charts": "recharts",
+    "notifications": "sonner",
+    "date_picker": "shadcn calendar"
+  },
+  "instructions_to_main_agent": [
+    "Install required dependencies: lucide-react, recharts, sonner, framer-motion.",
+    "Implement routing for Login, Admin Dashboard, Salesperson Dashboard.",
+    "Do NOT use HTML <input type='date'> or <select>, use Shadcn equivalents.",
+    "Build the Top Summary strip with 6 KPI cards using the provided metric rules.",
+    "Ensure table components support export functionality (or mock the UI buttons for Excel/PDF export).",
+    "NEVER use fully transparent backgrounds on dropdowns or overlays."
+  ],
+  "UNIVERSAL_GUIDELINES_FOR_MAIN_AGENT": "Avoid generic 'AI slop' aesthetics. Do not center align the main app container. Add 'sonner' for toast notifications. Ensure deep layered shadows only where necessary, relying mostly on 1px borders and tight padding for structure. Add subtle micro-interactions to buttons and rows."
+}
