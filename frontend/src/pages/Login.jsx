@@ -64,9 +64,9 @@ export default function LoginPage() {
           </p>
         </div>
         <div className="relative flex gap-8 text-sm">
-          <div><div className="text-3xl font-heading font-extrabold text-white">50+</div><div className="text-slate-400">Vendors</div></div>
-          <div><div className="text-3xl font-heading font-extrabold text-white">14</div><div className="text-slate-400">Salespersons</div></div>
-          <div><div className="text-3xl font-heading font-extrabold text-white">10</div><div className="text-slate-400">Products</div></div>
+          <div><div className="text-3xl font-heading font-extrabold text-white">1400+</div><div className="text-slate-400">Vendors</div></div>
+          <div><div className="text-3xl font-heading font-extrabold text-white">15</div><div className="text-slate-400">Salespersons</div></div>
+          <div><div className="text-3xl font-heading font-extrabold text-white">50</div><div className="text-slate-400">Products</div></div>
         </div>
       </div>
 
@@ -127,14 +127,9 @@ export default function LoginPage() {
                   <span className="font-medium text-slate-900">Admin</span>
                   <span className="text-slate-500"> · admin@dms.com / admin123</span>
                 </button>
-                <button
-                  data-testid="quick-fill-sales"
-                  onClick={(e) => quickFill(e, "sales1@dms.com", "sales123")}
-                  className="text-left px-3 py-2 rounded-lg bg-slate-50 hover:bg-slate-100 border border-slate-200 transition-colors"
-                >
-                  <span className="font-medium text-slate-900">Salesperson</span>
-                  <span className="text-slate-500"> · sales1@dms.com / sales123</span>
-                </button>
+                <p className="text-xs text-slate-500 px-1 pt-1">
+                  Salesperson credentials: see the login sheet shared by your admin (sales01@dms.com … sales15@dms.com).
+                </p>
               </div>
             </div>
           </CardContent>

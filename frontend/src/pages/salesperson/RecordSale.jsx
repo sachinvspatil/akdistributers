@@ -24,7 +24,7 @@ export default function SPRecordSale() {
   const load = async () => {
     const [inv, v, s] = await Promise.all([
       api.get("/my-inventory"),
-      api.get("/vendors"),
+      api.get("/my-vendors"),
       api.get("/sales", { params: { date: todayStr() } }),
     ]);
     setInventory(inv.data); setVendors(v.data); setSales(s.data);

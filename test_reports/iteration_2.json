@@ -1,0 +1,46 @@
+{
+  "summary": "Iteration 2 testing of DMS with real GPI_MASTER data. Backend: 25/25 pytest cases pass covering auth (sales01/sales02), dashboard totals (1442 vendors, 12 active salespersons), products (50 SKUs with new hsn_code/gst_pct/landing_price fields, category filter IPM=15/GPI=22/CANDY=9/FERRERO=4, STELLAR search), salespersons (15 with BLRAKDLT01-15 salesman_id), vendors (area filter Munnekollal 1=83, BAKERY case-insensitive search), new /api/my-vendors endpoint (sp1=83 Munnekollal 1, sp2=102 Munnekollal 2, admin 403), salesperson sale flow (blocked without allocation, allocation->sale flow works, dashboard reflects sale), and reports. Frontend: login page shows real stats (1400+ vendors, 15 salespersons, 50 products), no quick-fill-sales (only admin), Admin Products page shows 50 SKUs with HSN/GST%/Landing/MRP/PTR columns, category tabs filter correctly (verified all 4 counts + STELLAR search=13), Admin Salespersons has SE ID column with BLRAKDLT01..15, Admin Vendors has server-side area filter + search showing 1442 vendors, Salesperson RecordSale/Collections load and call /api/my-vendors (verified 83 Munnekollal 1 vendors for sales01).",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {"endpoint": "/api/dashboard/admin", "issue": "total_salespersons returns 12 (active) but problem statement expected 13. This is actually correct per /app/memory/test_credentials.md which shows 12 active + 3 inactive (BLRAKDLT04, 05, 12) = 15 total. Problem statement wording was slightly off (12 active, not 13)."}
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "Vendors admin page (dev only)", "issues": ["React hydration warning: <span> inside <option> element - caused by dev instrumentation attributes on <option> children in Vendors.jsx line 98 (route filter select). Cosmetic dev-mode console warning; doesn't affect production build or functionality."]}
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/backend_test.py",
+    "/app/test_reports/pytest/pytest_results.xml"
+  ],
+  "action_items": [
+    "None required. All 25 backend tests pass. All frontend flows verified end-to-end.",
+    "Optional: Consider updating problem statement to reflect 12 active salespersons (not 13) per /app/memory/test_credentials.md. Or activate BLRAKDLT12 (currently inactive placeholder 'Pending SE') if you want 13.",
+    "Optional cosmetic: hydration warning about <span> in <option> from Vendors.jsx dev tooling - use plain string children in <option> to silence it."
+  ],
+  "critical_code_review_comments": [
+    "server.py list_products: 'category' filter maps to 'brand' field (line 127). This is fine per current data model but naming inconsistency between UI (category) and DB (brand) could confuse future developers - consider renaming or adding an alias.",
+    "server.py my_vendors (line 288-291): building a nested $and with query.copy() is unnecessarily complex; simpler to build a single dict merging area+ regex or use $and cleanly. Currently works but is fragile.",
+    "server.py /api/my-vendors returns 5000 vendor cap via to_list(5000) - fine for current data but if a route ever exceeds this it will silently truncate.",
+    "Products.jsx displays GST as `(p.gst_pct * 100).toFixed(0)%` assuming decimal storage (0.4 -> 40%). Add-Product form label correctly says 'as decimal, e.g. 0.4' - consistent. Good.",
+    "Login page bottom-left stats are hardcoded strings '1400+', '15', '50' not fetched from API - if data changes these will drift. Consider fetching a public /api/stats endpoint or computing at build time.",
+    "seed.py is now only admin-seed - good. Ensure import_data.py is idempotent for future re-runs (should upsert, not duplicate); worth checking though I didn't run it.",
+    "Frontend uses `credentials: 'include'` implicitly via axios cookies — verified by successful /api/my-vendors XHR from browser context. Good.",
+    "Admin dashboard 'Vendors' card shows '1442' without thousands separator; consider using a locale-aware formatter for consistency with '₹232' style formatting.",
+    "Products page subtitle reads '13 SKUs in catalog' when STELLAR search shown - this is the filtered count, could be confusing. Consider showing 'Showing 13 of 50 SKUs' when filter/search active."
+  ],
+  "updated_files": [
+    "/app/backend/tests/backend_test.py (rewritten for iteration 2 with real data assertions)"
+  ],
+  "success_rate": {"backend": "100% (25/25 pytest)", "frontend": "100% (all listed flows verified)"},
+  "test_credentials": "Admin admin@dms.com/admin123; Salesperson sales01@dms.com/vyj6KaB4nv (Ugendran, Munnekollal 1); sales02@dms.com/vjKR7vHVVn (Nazeem, Munnekollal 2). Full list in /app/memory/test_credentials.md.",
+  "seed_data_creation": "During integration test 'test_admin_alloc_then_sp_sale' I added 100 units of first product (CAVANDER GOLD RICH 64MM) to godown and allocated 10 to sales01, then recorded a sale of 2 units to first sales01 vendor (365 CHAI). Godown balance and salesperson dashboard reflect these entries. Prior to test admin dashboard also had 2 sales of 2 units each (₹232 total) from earlier UI runs.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Backend pytest at /app/backend/tests/backend_test.py — 25 tests, all pass. Salesperson passwords in /app/memory/test_credentials.md. Frontend uses /sales/* routes (not /salesperson/*) for salesperson pages. Key data-testids present and verified: product-cat-all/IPM/GPI/CANDY/FERRERO, product-search, product-hsn/gst/landing-input, sp-salesman-id-input, vendor-area-filter, sale-vendor-trigger, sale-product-trigger, quick-fill-admin (no quick-fill-sales). Actual active salesperson count is 12 (not 13 as in problem statement).",
+  "rca of the issue": "N/A - no critical bugs found. Only note: problem statement claimed 13 active salespersons but source data (test_credentials.md and DB) shows 12 active (BLRAKDLT04, 05, 12 are inactive placeholders). This is a documentation drift, not a code bug."
+}

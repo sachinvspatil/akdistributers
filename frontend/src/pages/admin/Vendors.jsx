@@ -24,25 +24,32 @@ export default function VendorsPage() {
   const [form, setForm] = useState(EMPTY);
   const [history, setHistory] = useState(null);
   const [q, setQ] = useState("");
+  const [area, setArea] = useState("all");
+  const [areas, setAreas] = useState([]);
 
   const load = async () => {
     setLoading(true);
     try {
-      const { data } = await api.get("/vendors");
+      const params = {};
+      if (area !== "all") params.area = area;
+      if (q) params.q = q;
+      const { data } = await api.get("/vendors", { params });
       setRows(data);
+      if (areas.length === 0) {
+        const all = await api.get("/vendors", { params: { limit: 5000 } });
+        const uniq = Array.from(new Set(all.data.map((v) => v.area).filter(Boolean))).sort();
+        setAreas(uniq);
+      }
     } finally { setLoading(false); }
   };
-  useEffect(() => { load(); }, []);
+  // Debounce search
+  useEffect(() => {
+    const t = setTimeout(load, 250);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [q, area]);
 
-  const filtered = rows.filter((r) => {
-    if (!q) return true;
-    const s = q.toLowerCase();
-    return (
-      r.shop_name.toLowerCase().includes(s) ||
-      (r.owner_name || "").toLowerCase().includes(s) ||
-      (r.area || "").toLowerCase().includes(s)
-    );
-  });
+  const filtered = rows;
 
   const openCreate = () => { setEditing(null); setForm(EMPTY); setOpen(true); };
   const openEdit = (r) => { setEditing(r); setForm({ shop_name: r.shop_name, owner_name: r.owner_name, mobile: r.mobile, area: r.area, address: r.address }); setOpen(true); };
@@ -77,9 +84,23 @@ export default function VendorsPage() {
         }
       />
 
-      <div className="mb-4 relative max-w-sm">
-        <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-        <Input data-testid="vendor-search" placeholder="Search shops, owner, area…" value={q} onChange={(e) => setQ(e.target.value)} className="pl-9" />
+      <div className="mb-4 flex flex-col sm:flex-row gap-3">
+        <div className="relative sm:max-w-sm flex-1">
+          <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+          <Input data-testid="vendor-search" placeholder="Search shops, owner…" value={q} onChange={(e) => setQ(e.target.value)} className="pl-9" />
+        </div>
+        <select
+          data-testid="vendor-area-filter"
+          value={area}
+          onChange={(e) => setArea(e.target.value)}
+          className="h-10 rounded-md border border-slate-200 bg-white px-3 text-sm min-w-[180px]"
+        >
+          <option value="all">All Routes ({areas.length})</option>
+          {areas.map((a) => <option key={a} value={a}>{a}</option>)}
+        </select>
+        <div className="text-sm text-slate-500 flex items-center px-2">
+          Showing <span className="font-semibold text-slate-900 mx-1">{rows.length}</span> vendors
+        </div>
       </div>
 
       <Card className="border-slate-200 shadow-sm">

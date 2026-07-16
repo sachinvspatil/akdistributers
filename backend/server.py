@@ -121,8 +121,16 @@ async def me(user: dict = Depends(get_current_user)):
 
 # ---------- Products ----------
 @api.get("/products")
-async def list_products(user: dict = Depends(get_current_user)):
-    docs = await db.products.find({}).sort("name", 1).to_list(1000)
+async def list_products(user: dict = Depends(get_current_user), category: Optional[str] = None, q: Optional[str] = None):
+    query = {}
+    if category and category != "all":
+        query["brand"] = category
+    if q:
+        query["$or"] = [
+            {"name": {"$regex": q, "$options": "i"}},
+            {"sku": {"$regex": q, "$options": "i"}},
+        ]
+    docs = await db.products.find(query).sort("name", 1).to_list(2000)
     return [serialize(d) for d in docs]
 
 
@@ -193,6 +201,7 @@ async def create_salesperson(body: SalespersonIn, _: dict = Depends(require_admi
         "area": body.area,
         "status": body.status or "active",
         "email": (body.email or "").lower() or None,
+        "salesman_id": body.salesman_id,
         "created_at": now,
     }
     result = await db.salespersons.insert_one(doc)
@@ -245,8 +254,41 @@ async def disable_salesperson(sp_id: str, _: dict = Depends(require_admin)):
 
 # ---------- Vendors ----------
 @api.get("/vendors")
-async def list_vendors(user: dict = Depends(get_current_user)):
-    docs = await db.vendors.find({}).sort("shop_name", 1).to_list(2000)
+async def list_vendors(
+    user: dict = Depends(get_current_user),
+    area: Optional[str] = None,
+    q: Optional[str] = None,
+    limit: int = 5000,
+):
+    query = {}
+    if area:
+        query["area"] = area
+    if q:
+        query["$or"] = [
+            {"shop_name": {"$regex": q, "$options": "i"}},
+            {"owner_name": {"$regex": q, "$options": "i"}},
+            {"area": {"$regex": q, "$options": "i"}},
+        ]
+    docs = await db.vendors.find(query).sort("shop_name", 1).to_list(limit)
+    return [serialize(d) for d in docs]
+
+
+@api.get("/my-vendors")
+async def my_vendors(user: dict = Depends(get_current_user), q: Optional[str] = None):
+    """Vendors belonging to the current salesperson's route/area."""
+    if user.get("role") != "salesperson":
+        raise HTTPException(status_code=403, detail="Salesperson only")
+    sp_id = user.get("salesperson_id")
+    sp = await db.salespersons.find_one({"_id": oid(sp_id)}) if sp_id else None
+    if not sp:
+        raise HTTPException(status_code=404, detail="Salesperson not found")
+    query = {"area": sp["area"]}
+    if q:
+        query["$and"] = [
+            query.copy(),
+            {"$or": [{"shop_name": {"$regex": q, "$options": "i"}}, {"owner_name": {"$regex": q, "$options": "i"}}]},
+        ]
+    docs = await db.vendors.find(query).sort("shop_name", 1).to_list(5000)
     return [serialize(d) for d in docs]
 
 

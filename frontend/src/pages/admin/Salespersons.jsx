@@ -18,7 +18,7 @@ import {
 import { Plus, Pencil, PowerOff } from "lucide-react";
 import { toast } from "sonner";
 
-const EMPTY = { name: "", mobile: "", area: "", status: "active", email: "", password: "" };
+const EMPTY = { name: "", mobile: "", area: "", status: "active", email: "", password: "", salesman_id: "" };
 
 export default function SalespersonsPage() {
   const [rows, setRows] = useState([]);
@@ -39,7 +39,7 @@ export default function SalespersonsPage() {
   const openCreate = () => { setEditing(null); setForm(EMPTY); setOpen(true); };
   const openEdit = (r) => {
     setEditing(r);
-    setForm({ name: r.name, mobile: r.mobile, area: r.area, status: r.status, email: r.email || "", password: "" });
+    setForm({ name: r.name, mobile: r.mobile, area: r.area, status: r.status, email: r.email || "", password: "", salesman_id: r.salesman_id || "" });
     setOpen(true);
   };
 
@@ -83,9 +83,10 @@ export default function SalespersonsPage() {
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead>SE ID</TableHead>
                   <TableHead>Name</TableHead>
                   <TableHead>Mobile</TableHead>
-                  <TableHead>Area</TableHead>
+                  <TableHead>Route / Area</TableHead>
                   <TableHead>Email</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead></TableHead>
@@ -93,9 +94,10 @@ export default function SalespersonsPage() {
               </TableHeader>
               <TableBody>
                 {loading ? (
-                  <TableRow><TableCell colSpan={6} className="text-center py-8 text-slate-500">Loading…</TableCell></TableRow>
+                  <TableRow><TableCell colSpan={7} className="text-center py-8 text-slate-500">Loading…</TableCell></TableRow>
                 ) : rows.map((r) => (
                   <TableRow key={r.id}>
+                    <TableCell><code className="text-xs bg-slate-100 px-1.5 py-0.5 rounded">{r.salesman_id || "—"}</code></TableCell>
                     <TableCell className="font-medium">{r.name}</TableCell>
                     <TableCell>{r.mobile}</TableCell>
                     <TableCell>{r.area}</TableCell>
@@ -129,17 +131,9 @@ export default function SalespersonsPage() {
             <DialogTitle>{editing ? "Edit Salesperson" : "Add Salesperson"}</DialogTitle>
           </DialogHeader>
           <form onSubmit={save} className="grid grid-cols-2 gap-4">
-            <div className="col-span-2 space-y-1.5">
-              <Label>Name</Label>
-              <Input data-testid="sp-name-input" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
-            </div>
             <div className="space-y-1.5">
-              <Label>Mobile</Label>
-              <Input data-testid="sp-mobile-input" value={form.mobile} onChange={(e) => setForm({ ...form, mobile: e.target.value })} required />
-            </div>
-            <div className="space-y-1.5">
-              <Label>Area</Label>
-              <Input data-testid="sp-area-input" value={form.area} onChange={(e) => setForm({ ...form, area: e.target.value })} required />
+              <Label>Salesman ID</Label>
+              <Input data-testid="sp-salesman-id-input" value={form.salesman_id} onChange={(e) => setForm({ ...form, salesman_id: e.target.value })} placeholder="BLRAKDLT01" />
             </div>
             <div className="space-y-1.5">
               <Label>Status</Label>
@@ -151,11 +145,23 @@ export default function SalespersonsPage() {
                 </SelectContent>
               </Select>
             </div>
+            <div className="col-span-2 space-y-1.5">
+              <Label>Name</Label>
+              <Input data-testid="sp-name-input" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Mobile</Label>
+              <Input data-testid="sp-mobile-input" value={form.mobile} onChange={(e) => setForm({ ...form, mobile: e.target.value })} required />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Route / Area</Label>
+              <Input data-testid="sp-area-input" value={form.area} onChange={(e) => setForm({ ...form, area: e.target.value })} required />
+            </div>
             <div className="space-y-1.5">
               <Label>Email (for login)</Label>
               <Input data-testid="sp-email-input" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
             </div>
-            <div className="col-span-2 space-y-1.5">
+            <div className="space-y-1.5">
               <Label>{editing ? "New Password (leave blank to keep)" : "Password"}</Label>
               <Input data-testid="sp-password-input" type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} />
             </div>

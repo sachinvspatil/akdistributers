@@ -32,7 +32,7 @@ export default function SPCollections() {
 
   const load = async () => {
     const [v, c] = await Promise.all([
-      api.get("/vendors"),
+      api.get("/my-vendors"),
       api.get("/collections", { params: { date: todayStr() } }),
     ]);
     setVendors(v.data); setCollections(c.data);

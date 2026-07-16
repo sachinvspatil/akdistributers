@@ -59,11 +59,14 @@ class UserOut(UserBase):
 # ---------- Product ----------
 class ProductIn(BaseModel):
     name: str
-    brand: str
+    brand: str  # Category (IPM / GPI / CANDY / FERRERO) in current data set
     sku: str
-    selling_price: float
-    commission_per_unit: float
+    selling_price: float  # MRP
+    commission_per_unit: float  # PTR
     current_stock: int = 0
+    hsn_code: Optional[str] = None
+    gst_pct: Optional[float] = None
+    landing_price: Optional[float] = None  # purchase price
 
 
 class ProductOut(ProductIn):
@@ -80,6 +83,7 @@ class SalespersonIn(BaseModel):
     status: str = "active"  # active | inactive
     email: Optional[EmailStr] = None
     password: Optional[str] = None  # only on create
+    salesman_id: Optional[str] = None  # external code e.g. BLRAKDLT01
 
 
 class SalespersonUpdate(BaseModel):
@@ -89,6 +93,7 @@ class SalespersonUpdate(BaseModel):
     status: Optional[str] = None
     email: Optional[EmailStr] = None
     password: Optional[str] = None
+    salesman_id: Optional[str] = None
 
 
 class SalespersonOut(BaseModel):
