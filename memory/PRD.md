@@ -1,44 +1,49 @@
 # PRD — Distribution Management System (DMS)
 
 ## Original Problem Statement
-Build a modern web application called "Distribution Management System" for a cigarette distributor to manage inventory, salespersons, vendors, daily stock allocation, sales entry, collections, EoD summary and reports. Admin + Salesperson roles. White + dark blue theme.
+Full-stack DMS for a cigarette distributor. Admin manages products, salespersons, vendors, godown, allocations, reports; salesperson records sales & collections and views own EOD summary + commission.
 
 ## Architecture
-- FastAPI + MongoDB backend (all routes under `/api`)
-- JWT-based auth (bcrypt + httpOnly cookies + Authorization bearer fallback via localStorage token)
-- React 19 + React Router + Shadcn UI + Recharts frontend
-- Excel export via openpyxl, PDF export via reportlab
+- FastAPI + MongoDB backend (`/api` prefix)
+- JWT auth (bcrypt + httpOnly cookies + bearer fallback)
+- React 19 + Router + Shadcn UI + Recharts
+- Excel export via openpyxl, PDF via reportlab
 
-## User Personas
-- **Admin (distributor owner)**: manages catalog, team, vendors, godown, allocations; views reports & dashboard.
-- **Salesperson (field agent)**: views daily allocation, records sales & collections, sees own commission and EOD summary.
+## What's Been Implemented
 
-## Core Requirements (Implemented)
-- Products CRUD (name, brand, SKU, price, commission, stock)
-- Salespersons CRUD + user account (email/password) + status toggle
-- Vendors CRUD + purchase history with outstanding
-- Godown inventory: current stock per product + transaction log (added / allocated / returned)
-- Daily stock allocation (reduces godown, adds to salesperson inventory)
-- Sales entry (auto compute sale value & commission; enforces remaining stock)
-- Collections (payment mode + notes)
-- Admin dashboard (6 metric cards + 7-day sales trend chart + top selling bar chart)
-- Salesperson dashboard (opening / sold / remaining / sales / collection / commission + stock table)
-- End-of-day summary per salesperson
-- Reports: Daily Sales, Salesperson Performance, Product-wise Sales, Vendor Outstanding, Collections
-- Excel + PDF export for every report
-- Seed data: 10 products, 14 salespersons, 50 vendors
+### 2026-02-09 — MVP
+Auth, all CRUD flows, admin dashboard with charts, salesperson flows, EOD summary, 5 reports (Excel + PDF).
 
-## Auth / Test Credentials
-See `/app/memory/test_credentials.md`.
+### 2026-02-16 — Real Data Import
+Wiped dummy seed data and imported real GPI_MASTER.xlsx:
+- **50 products** with new fields `hsn_code`, `gst_pct`, `landing_price` (categories: IPM=15, GPI=22, CANDY=9, FERRERO=4)
+- **15 salespersons** with external `salesman_id` (BLRAKDLT01..15); 12 active, 3 inactive placeholders
+- **1442 vendors** mapped to routes by name-prefix (e.g. "01 BAKERY" → route "Munnekollal 1")
 
-## Backlog (P1/P2 for future iterations)
-- P1: Search & pagination for large tables (allocations, sales, collections)
-- P1: Filter EOD summary by salesperson
-- P2: Charts on salesperson dashboard (weekly trend)
-- P2: Multi-day date range selector in reports
-- P2: Vendor credit limit alerts
-- P2: Push notifications / daily WhatsApp SMS integration
-- P2: Bulk stock allocation (multiple products in one request)
+New features added on top of MVP:
+- Category filter + product search on `/api/products`
+- Server-side area filter + search on `/api/vendors`
+- New `/api/my-vendors` endpoint — salesperson auto-scoped to their route
+- Salesperson Record-Sale + Collections pages now show only their route's vendors
+- Product page shows HSN, GST%, Landing price columns + category tabs
+- Salesperson page shows SE ID column (BLRAKDLT01…)
+- Import script `/app/backend/import_data.py` (re-runnable to refresh data)
+- Admin-only seed on startup (no dummy data)
 
-## What's Been Implemented (2026-02-09)
-- Full end-to-end MVP wired: auth, all CRUD flows, dashboard, sales/collections flows, reports (Excel + PDF).
+## Backlog
+
+### P1 (recommended next)
+- Vendor bulk edit (owner name / mobile / address are empty from spreadsheet — needs enrichment)
+- Bulk stock allocation (multiple products in one request)
+- Products.jsx subtitle: show "Showing X of 50" when filter active
+- Multi-day date range in reports
+
+### P2
+- WhatsApp/SMS daily EoD digest to each salesperson & consolidated to admin
+- Vendor credit-limit alerts & auto-suspend
+- Charts on salesperson dashboard (weekly trend)
+- Route-optimization for delivery sequence
+- GST-compliant tax invoice PDF per sale
+
+## Credentials
+See `/app/memory/test_credentials.md` — admin + all 15 salespersons (auto-generated passwords).
