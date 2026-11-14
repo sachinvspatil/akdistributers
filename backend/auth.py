@@ -10,6 +10,7 @@ from bson import ObjectId
 JWT_ALGORITHM = "HS256"
 ACCESS_TOKEN_MINUTES = 60 * 12  # 12h for convenience in a business app
 REFRESH_TOKEN_DAYS = 7
+COOKIE_SECURE = os.environ.get("COOKIE_SECURE", "false").lower() == "true"
 
 
 def get_jwt_secret() -> str:
@@ -50,11 +51,11 @@ def create_refresh_token(user_id: str) -> str:
 def set_auth_cookies(response, access_token: str, refresh_token: str):
     response.set_cookie(
         key="access_token", value=access_token, httponly=True,
-        secure=False, samesite="lax", max_age=ACCESS_TOKEN_MINUTES * 60, path="/",
+        secure=COOKIE_SECURE, samesite="lax", max_age=ACCESS_TOKEN_MINUTES * 60, path="/",
     )
     response.set_cookie(
         key="refresh_token", value=refresh_token, httponly=True,
-        secure=False, samesite="lax", max_age=REFRESH_TOKEN_DAYS * 24 * 3600, path="/",
+        secure=COOKIE_SECURE, samesite="lax", max_age=REFRESH_TOKEN_DAYS * 24 * 3600, path="/",
     )
 
 
