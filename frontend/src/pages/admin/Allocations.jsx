@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import api, { formatApiError, todayStr } from "@/lib/api";
 import { PageContainer, PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/button";
@@ -26,7 +26,7 @@ export default function AllocationsPage() {
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ salesperson_id: "", product_id: "", quantity: 0, date: todayStr() });
 
-  const load = async () => {
+  const load = useCallback(async () => {
     setLoading(true);
     try {
       const [a, p, s] = await Promise.all([
@@ -36,8 +36,8 @@ export default function AllocationsPage() {
       ]);
       setAllocations(a.data); setProducts(p.data); setSalespersons(s.data.filter((sp) => sp.status === "active"));
     } finally { setLoading(false); }
-  };
-  useEffect(() => { load(); }, [date]);
+  }, [date]);
+  useEffect(() => { load(); }, [load]);
 
   const submit = async (e) => {
     e.preventDefault();

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import api, { formatApiError, money } from "@/lib/api";
 import { PageContainer, PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/button";
@@ -32,7 +32,7 @@ export default function ProductsPage() {
   const [category, setCategory] = useState("all");
   const [q, setQ] = useState("");
 
-  const load = async () => {
+  const load = useCallback(async () => {
     setLoading(true);
     try {
       const params = {};
@@ -43,8 +43,8 @@ export default function ProductsPage() {
     } finally {
       setLoading(false);
     }
-  };
-  useEffect(() => { load(); }, [category, q]);
+  }, [category, q]);
+  useEffect(() => { load(); }, [load]);
 
   const openCreate = () => { setEditing(null); setForm(EMPTY); setOpen(true); };
   const openEdit = (p) => { setEditing(p); setForm({ ...EMPTY, ...p }); setOpen(true); };
